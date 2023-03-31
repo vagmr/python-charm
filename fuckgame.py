@@ -3,104 +3,142 @@ import random
 
 pygame.init()
 
-# 设置窗口大小和标题
 screen_width = 640
 screen_height = 480
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("回合制游戏")
 
-# 设置字体
-pygame.font.init()
-font = pygame.font.SysFont('SimHei', 24)
+font = pygame.font.SysFont(None, 30)
 
-# 定义玩家和怪物的类
+def generate_random_name():
+    syllables = ['ba', 'be', 'bo', 'bu', 'da', 'de', 'do', 'du', 'ga', 'ge', 'go', 'gu']
+    name = ''
+    for i in range(random.randint(2, 3)):
+        name += random.choice(syllables)
+    return name.capitalize()
+
+class Monster:
+    MONSTER_TYPES = ['Goblin', 'Mountain Goblin', 'Slime', 'Werewolf']
+    def __init__(self, name=None):
+        if name is None:
+            self.name = generate_random_name()  # 随机生成一个名称
+        else:
+            self.name = name
+        self.monster_type = random.choice(Monster.MONSTER_TYPES)  # 从四种类型中随机选择一种
+        if self.monster_type == 'Goblin':
+            self.health = 50
+            self.max_health = 50
+            self.damage = 5
+        elif self.monster_type == 'Mountain Goblin':
+            self.health = 60
+            self.max_health = 60
+            self.damage = 7
+        elif self.monster_type == 'Slime':
+            self.health = 20
+            self.max_health = 20
+            self.damage = 3
+        elif self.monster_type == 'Werewolf':
+            self.health = 100
+            self.max_health = 100
+            self.damage = 15
+
 class Character:
     def __init__(self, name):
         self.name = name
         self.health = 100
+        self.max_health = 100
         self.damage = 10
+        self.level = 1
+        self.experience = 0
+        self.required_experience = 15
+
+    def gain_experience(self, experience_points):
+        self.experience += experience_points
+        while self.experience >= self.required_experience:
+            self.level_up()
+        
+    def level_up(self):
+        self.level += 1
+        self.experience -= self.required_experience
+        self.required_experience *= 3
+        self.max_health += 10
+        self.health = self.max_health
+        self.damage += 2
 
     def attack(self, target):
         damage = random.randint(1, self.damage)
         print(f"{self.name} 攻击了 {target.name}，造成了 {damage} 点伤害！")
         target.take_damage(damage)
+        if isinstance(target, Monster) and target.health <= 0:
+            experience_earned = random.randint(1, 10)
+            self.gain_experience(experience_earned)
+            print(f"{self.name} 获得了 {experience_earned} 点经验！当前经验值为 {self.experience}")
 
     def take_damage(self, damage):
         self.health -= damage
         if self.health <= 0:
-            print(f"{self.name} 已经被打败了！")
-
-class Monster:
-    def __init__(self, name, health, damage):
-        self.name = name
-        self.health = health
-        self.damage = damage
-
-    def attack(self, target):
-        damage = random.randint(1, self.damage)
-        print(f"{self.name} 攻击了 {target.name}，造成了 {damage} 点伤害！")
-        target.take_damage(damage)
-
-    def take_damage(self, damage):
-        self.health -= damage
-        if self.health <= 0:
-            print(f"{self.name} 已经被打败了！")
-
-# 定义主类和 GUI 函数
+            print(f"{self.name} 被击败了！")
+            return False
+        else:
+            print(f"{self.name} 受到了 {damage} 点伤害，还剩下 {self.health} 点生命值。")
+            return True
 class Game:
-    def __init__(self, player_name):
-        self.player = Character(player_name)
-        self.monster = Monster("哥布林", 50, 5)
-        self.running = False
+    def __init__(self):
+        self.player_name = input("请输入你的名字：")
+        self.player = Character(self.player_name)
+        self.monster = Monster()
         self.attack_button_rect = None
-
-    def start(self):
+        self.quit_button_rect = None
         self.running = True
+    def start(self):
+        pygame.display.set_caption('冒险游戏')
+        screen = pygame.display.set_mode((screen_width, screen_height))
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                # 检测攻击按钮的点击事件
+                if self.attack_button_rect.collidepoint(pos):
+                    self.player.attack(self.monster)  # 玩家对怪物造成伤害
+                    if self.monster.health <= 0:
+                        print("玩家胜利！")
+                        self.running = False
+                        break
+                    self.monster.attack(self.player)  # 怪物对玩家造成伤害
+                    if self.player.health <= 0:
+                        print("玩家失败！")
+                        self.running = False
+                        break
+                # 检测退出按钮的点击事件
+                elif self.quit_button_rect.collidepoint(pos):
+                    print("游戏结束。")
                     self.running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    pos = pygame.mouse.get_pos()
-                    # 检测攻击按钮的点击事件
-                    if self.attack_button_rect.collidepoint(pos):
-                        self.player.attack(self.monster) # 玩家对怪物造成伤害
-                        if self.monster.health <= 0:
-                            print("玩家胜利！")
-                            self.running = False
-                            break
-                        self.monster.attack(self.player) # 怪物对玩家造成伤害
-                        if self.player.health <= 0:
-                            print("怪物胜利！")
-                            self.running = False
-                            break
+                    break
 
-            # 更新屏幕内容
-            screen.fill((255, 255, 255))
-            player_health_text = font.render(f"玩家: {self.player.health}", True, (0, 0, 0))
-            monster_health_text = font.render(f"{self.monster.name}: {self.monster.health}", True, (0, 0, 0))
-            screen.blit(player_health_text, (10, 10))
-            screen.blit(monster_health_text, (10, 40))
+        screen.fill((255, 255, 255))
 
-            # 绘制攻击按钮和文本
-            attack_button_text = font.render("攻击", True, (255, 255, 255))
-            attack_button_width = attack_button_text.get_width() + 20
-            attack_button_height = attack_button_text.get_height() + 10
-            attack_button_x = (screen_width - attack_button_width) // 2
-            attack_button_y = (screen_height - attack_button_height) // 2 + 50
-            self.attack_button_rect = pygame.Rect(attack_button_x, attack_button_y, attack_button_width, attack_button_height)
-            pygame.draw.rect(screen, (0, 0, 255), self.attack_button_rect)
-            screen.blit(attack_button_text, (attack_button_x + 10, attack_button_y + 5))
+        # 绘制攻击按钮
+        attack_button_text = font.render('攻击', True, (0, 0, 0))
+        self.attack_button_rect = attack_button_text.get_rect()
+        self.attack_button_rect.center = (screen_width // 4, screen_height // 2)
+        pygame.draw.rect(screen, (200, 200, 200), [self.attack_button_rect.x - 10, self.attack_button_rect.y - 5, self.attack_button_rect.width + 20, self.attack_button_rect.height + 10])
+        screen.blit(attack_button_text, self.attack_button_rect)
 
-            pygame.display.flip()
+        # 绘制退出按钮
+        quit_button_text = font.render('退出', True, (0, 0, 0))
+        self.quit_button_rect = quit_button_text.get_rect()
+        self.quit_button_rect.center = (screen_width * 3 // 4, screen_height // 2)
+        pygame.draw.rect(screen, (200, 200, 200), [self.quit_button_rect.x - 10, self.quit_button_rect.y - 5, self.quit_button_rect.width + 20, self.quit_button_rect.height + 10])
+        screen.blit(quit_button_text, self.quit_button_rect)
 
-    def play(self):
-        # 在这里添加游戏逻辑
-        pass
+        # 绘制角色和怪物的信息
+        player_info_text = font.render(f"玩家 {self.player.name} | 生命值 {self.player.health}/{self.player.max_health} | 等级 {self.player.level} | 经验值 {self.player.experience}/{self.player.required_experience}", True, (0, 0, 0))
+        screen.blit(player_info_text, (20, 20))
+        monster_info_text = font.render(f"怪物 {self.monster.name} | 生命值 {self.monster.health}/{self.monster.max_health} | 攻击力 {self.monster.damage}", True, (0, 0, 0))
+        screen.blit(monster_info_text, (screen_width - 20 - monster_info_text.get_width(), 20))
 
-def GUI():
-    game_instance = Game("玩家")
-    game_instance.start()
+        pygame.display.flip()
 
-# 启动游戏
-GUI()
+pygame.quit()
+game = Game()
+game.start()
