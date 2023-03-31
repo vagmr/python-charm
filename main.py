@@ -85,7 +85,7 @@ class LoginPage(object):
         self.root.title('登录界面')
         self.root.geometry('%dx%d' % (300, 200))  # 设置窗口大小
         self.username = StringVar()
-        self.username.set('e.g.npucs2022666666')
+        self.username.set('vagmr')
         self.password = StringVar()
 
     def fun(self):#执行函数
@@ -280,7 +280,7 @@ class MainPage(object):
             helptop = tk.Toplevel()
             helptop.title('帮助')
             helptop.geometry('400x250')
-            helptext = '帮助\n欢迎进入赛博功德系统\n点击下方按钮敲击木鱼积攒功德\n你可以点击下方按钮消耗功德让佛祖陪你笑\n也可以扣\'1\'快速让佛祖陪你笑\n更多功能正在开发（不会）'
+            helptext = '帮助\n欢迎进入大功德系统\n点击下方按钮敲击木鱼积攒功德\n你可以点击下方按钮消耗功德让佛祖陪你笑\n也可以扣\'1\'快速让佛祖陪你笑\n更多功能正在开发（不会）'
             tk.Label(helptop, text=helptext,font=('楷体',15)).pack()
         b02 = Button(self.root, bg='white', bd=0, font=('楷体', 30), fg='gold', text='帮助', command=Helptip)
         b02.place(width=120, height=50, x=560, y=10)  # 帮助按钮
