@@ -97,27 +97,27 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
-                    if self.attack_button_rect.collidepoint(pos):
-                        self.player.attack(self.monster)
-                        if self.monster.health <= 0:
-                            print("玩家胜利！")
-                            self.running = False
-                            break
-                        self.monster.attack(self.player)
-                        if self.player.health <= 0:
-                            print("玩家失败！")
-                            self.running = False
-                            break
-                    elif self.quit_button_rect.collidepoint(pos):
-                        print("游戏结束。")
-                        self.running = False
-                        break
 
-            self.screen.fill((255, 255, 255))
+            # 游戏逻辑
+            pos = pygame.mouse.get_pos()
+            if self.attack_button_rect.collidepoint(pos) and pygame.mouse.get_pressed()[0]:
+                self.player.attack(self.monster)
+                if self.monster.health <= 0:
+                    print("玩家胜利！")
+                    self.running = False
+                else:
+                    self.monster.attack(self.player)
+                    if self.player.health <= 0:
+                        print("玩家失败！")
+                        self.running = False
+
+            elif self.quit_button_rect.collidepoint(pos) and pygame.mouse.get_pressed()[0]:
+                print("游戏结束。")
+                self.running = False
 
             # 绘制
+            self.screen.fill((255, 255, 255))
+
             player_text = font.render(f"{self.player.name} (Level {self.player.level})", True, (0, 0, 0))
             self.screen.blit(player_text, (20, 20))
 
@@ -134,17 +134,16 @@ class Game:
 
             if not self.attack_button_rect:
                 attack_button_text = font.render("攻击", True, (0, 0, 0))
-                self.attack_button_rect = pygame.Rect(20, screen_height - attack_button_text.get_height() - 20, attack_button_text.get_width(), attack_button_text.get_height())
-                pygame.draw.rect(self.screen, (200, 200, 200), self.attack_button_rect)
-                pygame.draw.rect(self.screen, (0, 0, 0), self.attack_button_rect, 1)
-                self.screen.blit(attack_button_text, (self.attack_button_rect.x, self.attack_button_rect.y))
+                self.attack_button_rect = pygame.Rect(20, self.screen.get_height() - attack_button_text.get_height() - 20, attack_button_text.get_width(), attack_button_text.get_height())
+            pygame.draw.rect(self.screen, (200, 200, 200), self.attack_button_rect)
+            pygame.draw.rect(self.screen, (0, 0, 0), self.attack_button_rect, 1)
+            self.screen.blit(attack_button_text, (self.attack_button_rect.x, self.attack_button_rect.y))
+
             if not self.quit_button_rect:
                 quit_button_text = font.render("退出", True, (0, 0, 0))
-                self.quit_button_rect = pygame.Rect(screen_width - quit_button_text.get_width() - 20, screen_height - quit_button_text.get_height() - 20, quit_button_text.get_width(), quit_button_text.get_height())
-                pygame.draw.rect(self.screen, (200, 200, 200), self.quit_button_rect)
-                pygame.draw.rect(self.screen, (0, 0, 0), self.quit_button_rect, 1)
-                self.screen.blit(quit_button_text, (self.quit_button_rect.x, self.quit_button_rect.y))
-
-            pygame.display.flip()
-
-        pygame.quit()
+                self.quit_button_rect = pygame.Rect(screen_width - quit_button_text.get_width() - 20, self.screen.get_height() - quit_button_text.get_height() - 20, quit_button_text.get_width(), quit_button_text.get_height())
+            pygame.draw.rect(self.screen, (200, 200, 200), self.quit_button_rect)
+            pygame.draw.rect(self.screen, (0, 0, 0), self.quit_button_rect, 1)
+            self.screen.blit(quit_button_text, (self.quit_button_rect.x, self.quit_button_rect.y))
+            pygame.display.update()
+            pygame.quit()
