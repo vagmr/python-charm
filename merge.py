@@ -56,7 +56,6 @@ comparison_table = comparison_table.style.applymap(lambda x: 'background-color: 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', -1)
-
+pd.set_option('display.max_colwidth', None)
 # 输出对比结果，并进行自动换行
-print(comparison_table.render())
+print(comparison_table.to_html())
